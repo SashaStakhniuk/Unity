@@ -11,7 +11,7 @@ public class CoinsController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        CoinsScoreText.GetComponent<Text>().text = Player.CoinsAmount.ToString();
     }
 
     // Update is called once per frame
@@ -27,20 +27,28 @@ public class CoinsController : MonoBehaviour
 
         if (other.tag == "Character")
         {
-            int currentMoneyAmount = 0;
-            string money = CoinsScoreText.GetComponent<Text>().text;
-            if (!String.IsNullOrEmpty(money))
-            {
-                currentMoneyAmount = Int32.Parse(money);
-                Debug.Log("-> currentMoneyAmount = " + currentMoneyAmount + "\n");
-                Debug.Log("-> inputMoney = " + money + "\n");
-                Debug.Log("-> Score: " + Score + "\n");
+            //int currentMoneyAmount = 0;
+            //string money = CoinsScoreText.GetComponent<Text>().text;
+            //if (!String.IsNullOrEmpty(money))
+            //{
+            //    currentMoneyAmount = Int32.Parse(money);
+            //    //Debug.Log("-> currentMoneyAmount = " + currentMoneyAmount + "\n");
+            //    //Debug.Log("-> inputMoney = " + money + "\n");
+            //    //Debug.Log("-> Score: " + Score + "\n");
 
-                currentMoneyAmount += Score;
-                Debug.Log("-> currentMoneyAmount = " + currentMoneyAmount + "\n");
-                Destroy(gameObject);
-                CoinsScoreText.GetComponent<Text>().text = currentMoneyAmount.ToString();
-            }
+            //    currentMoneyAmount += Score;
+            //    //Debug.Log("-> currentMoneyAmount = " + currentMoneyAmount + "\n");
+
+            //    Destroy(gameObject);
+            //    CoinsScoreText.GetComponent<Text>().text = currentMoneyAmount.ToString();
+            //    AudioManager.instance.Play("CoinPickedUp");
+            //}
+            Player.CoinsAmount += Score;
+            AudioManager.instance.Play("Coin");
+            Destroy(gameObject);
+            CoinsScoreText.GetComponent<Text>().text = Player.CoinsAmount.ToString();
+            Debug.Log(Player.CoinsAmount);
+
 
         }
     }

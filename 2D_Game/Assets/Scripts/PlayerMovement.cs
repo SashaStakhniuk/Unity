@@ -1,17 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
 
 public class PlayerMovement : MonoBehaviour
 {
     PlayerControls playerControls;
     public Rigidbody2D playerRB;
-    public float speed = 200;
-    public float JumpForce = 10;
-    public int JumpCount = 1;
+    //public float speed = 200;
+    //public float JumpForce = 10;
+    //public int JumpCount = 1;
     private int AvailableJumpAmount;
+    public GameObject HealthAmountText;
+    public GameObject SpeedEncreaseItem;
+    public GameObject JumpEncreaseItem;
+    public Joystick joystick;
 
 
     public Animator animator;
@@ -21,6 +25,23 @@ public class PlayerMovement : MonoBehaviour
     public Transform groundCheck;
     public LayerMask groundLayer;
     private bool isGroundedCheck = true;
+
+    void Start()
+    {
+        //Player.Speed = 500;
+        //Player.JumpForce = 10;
+        //Player.JumpCount = 2;
+        if (SpeedEncreaseItem !=null && Player.Speed < 500)
+        {
+            SpeedEncreaseItem.SetActive(true);
+        }
+        if (JumpEncreaseItem != null && Player.JumpCount < 2)
+        {
+           JumpEncreaseItem.SetActive(true);
+        }
+        HealthAmountText.GetComponent<Text>().text = "x "+Player.Health.ToString();
+
+    }
     private void Awake()
     {
         playerControls = new PlayerControls();
@@ -28,7 +49,6 @@ public class PlayerMovement : MonoBehaviour
         playerControls.Land.Move.performed += ctx =>
         {
             direction = ctx.ReadValue<float>();
-
         };
         playerControls.Land.Jump.performed += ctx => Jump();
     }
@@ -36,8 +56,17 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position,0.1f, groundLayer);
-        playerRB.velocity = new Vector2(direction * speed * Time.fixedDeltaTime, playerRB.velocity.y);
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.1f, groundLayer);
+
+        //float direction = joystick.Horizontal; Джойстик
+        //Debug.Log(direction);
+        //float jump = joystick.Vertical;
+        //if(jump>= 0.7)
+        //{
+        //    Jump();
+        //}
+
+        playerRB.velocity = new Vector2(direction * Player.Speed * Time.fixedDeltaTime, playerRB.velocity.y);
         animator.SetFloat("speed", Mathf.Abs(direction));
         if (isGroundedCheck != isGrounded)
         {
@@ -64,17 +93,19 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("Jump");
         if (isGrounded)
         {
-            AvailableJumpAmount = JumpCount;
+            AvailableJumpAmount = Player.JumpCount;
             AvailableJumpAmount--;
             Debug.Log("On the ground");
-            playerRB.velocity = new Vector2(playerRB.velocity.x, JumpForce);
+            playerRB.velocity = new Vector2(playerRB.velocity.x, Player.JumpForce);
+            AudioManager.instance.Play("Jump");
         }
         else
         {
             if (AvailableJumpAmount > 0)
             {
                 AvailableJumpAmount--;
-                playerRB.velocity = new Vector2(playerRB.velocity.x, JumpForce);
+                playerRB.velocity = new Vector2(playerRB.velocity.x, Player.JumpForce);
+                AudioManager.instance.Play("Jump");
                 Debug.Log("In the air");
                 Debug.Log("jumpAmountLeft->" + AvailableJumpAmount);
 
@@ -88,14 +119,30 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("Enemy");
             Destroy(gameObject);
-            Scene scene = SceneManager.GetActiveScene();
-            SceneManager.LoadScene(scene.name);
+
+            Player.Health -= 1;
+            HealthAmountText.GetComponent<Text>().text = "x " + Player.Health.ToString();
+            if (Player.Health <= 0)
+            {
+                AudioManager.instance.Play("GameOver");
+                Player.SetDefaultValues();
+                PlayerManager.isGameOver = true;
+            }
+            else
+            {
+                AudioManager.instance.Play("HealthDecrease");
+                Scene scene = SceneManager.GetActiveScene();
+                SceneManager.LoadScene(scene.name);
+            }
+
         }
         if (other.tag == "SpeedEncreaseItem")
         {
             Debug.Log("SpeedEncreaseItem");
-            speed = 500;
+            //speed = 500;
+            Player.Speed = 500;
             Destroy(other.gameObject);
+            AudioManager.instance.Play("SuperPower");
 
             //Scene scene = SceneManager.GetActiveScene();
             //SceneManager.LoadScene(scene.name);
@@ -103,8 +150,10 @@ public class PlayerMovement : MonoBehaviour
         if (other.tag == "JumpEncreaseItem")
         {
             Debug.Log("JumpEncreaseItem");
-            JumpCount = 2;
+            Player.JumpCount = 2;
+            //JumpCount = 2;
             Destroy(other.gameObject);
+            AudioManager.instance.Play("SuperPower");
 
             //Scene scene = SceneManager.GetActiveScene();
             //SceneManager.LoadScene(scene.name);

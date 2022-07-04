@@ -20,8 +20,17 @@ public class NextLevelScript : MonoBehaviour
     {
         if (other.tag == "Character")
         {
+            int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+            if (SceneManager.sceneCountInBuildSettings > nextSceneIndex)
+            {
+                SceneManager.LoadScene(nextSceneIndex);
+            }
+            else
+            {
+                SceneManager.LoadScene("Menu");
+            }
             Debug.Log("\n-> NextLevel!\n");
-            SceneManager.LoadScene("Level2");
+           // SceneManager.LoadScene("Level2");
         }
     }
 }
